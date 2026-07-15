@@ -2,7 +2,12 @@
   "nav": {
     "login": "लॉगिन",
     "register": "सुरू करा",
-    "dashboard": "डॅशबोर्ड"
+    "dashboard": "डॅशबोर्ड",
+    "scanner": "स्कॅनर",
+    "crop": "पीक",
+    "weather": "हवामान",
+    "chatbot": "सहाय्यक",
+    "logout": "लॉगआउट"
   },
   "landing": {
     "badge": "AI-चालित स्मार्ट शेती व्यासपीठ",
@@ -33,15 +38,77 @@
     "chatbot_title": "AI चॅटबॉट",
     "chatbot_desc": "इंग्रजी, हिंदी किंवा मराठीत शेतीचे प्रश्न विचारा."
   },
+  "auth": {
+    "login_title": "परत स्वागत आहे",
+    "login_subtitle": "तुमच्या CropGuard AI खात्यात साइन इन करा",
+    "login_button": "साइन इन करा",
+    "login_link": "साइन इन करा",
+    "register_title": "खाते तयार करा",
+    "register_subtitle": "CropGuard AI मध्ये सामील व्हा — हे मोफत आहे",
+    "register_button": "खाते तयार करा",
+    "register_link": "तयार करा",
+    "username": "वापरकर्ता नाव",
+    "username_placeholder": "tumcha_nav",
+    "email": "ईमेल पत्ता",
+    "email_placeholder": "tum@example.com",
+    "first_name": "पहिले नाव",
+    "first_name_placeholder": "रमेश",
+    "last_name": "आडनाव",
+    "last_name_placeholder": "पाटील",
+    "phone": "फोन नंबर",
+    "phone_placeholder": "+91 98765 43210",
+    "location": "तुमचे गाव / जिल्हा",
+    "location_placeholder": "उदा. नाशिक, महाराष्ट्र",
+    "preferred_language": "पसंतीची भाषा",
+    "password": "पासवर्ड",
+    "password_placeholder": "किमान 8 अक्षरे",
+    "confirm_password": "पासवर्डची पुष्टी करा",
+    "confirm_password_placeholder": "पासवर्ड पुन्हा टाका",
+    "invalid_credentials": "चुकीचे वापरकर्ता नाव किंवा पासवर्ड.",
+    "no_account": "खाते नाही?",
+    "have_account": "आधीच खाते आहे?"
+  },
+  "dashboard": {
+    "good_morning": "सुप्रभात",
+    "good_afternoon": "नमस्कार",
+    "good_evening": "शुभ संध्याकाळ",
+    "welcome_subtitle": "आज तुम्हाला काय करायचे आहे?",
+    "stat_scans": "एकूण स्कॅन",
+    "stat_diseases": "आढळलेले रोग",
+    "stat_crops": "सुचवलेली पिके",
+    "stat_reports": "तयार केलेले अहवाल",
+    "quick_actions": "त्वरित क्रिया",
+    "recent_activity": "अलीकडील क्रियाकलाप",
+    "no_activity": "अजून कोणताही क्रियाकलाप नाही. झाड स्कॅन करून किंवा पीक शिफारस घेऊन सुरुवात करा.",
+    "start_scanning": "झाड स्कॅन करा",
+    "action_scan": "झाड स्कॅनर",
+    "action_scan_desc": "फोटोवरून झाड ओळखा आणि रोग शोधा.",
+    "action_crop": "पीक शिफारस",
+    "action_crop_desc": "तुमच्या माती आणि हवामानासाठी सर्वोत्तम पीक मिळवा.",
+    "action_fertilizer": "खत सल्ला",
+    "action_fertilizer_desc": "तुमच्या पीक आणि मातीसाठी योग्य खत शोधा.",
+    "action_irrigation": "सिंचन नियोजन",
+    "action_irrigation_desc": "पाण्याची आवश्यकता आणि सिंचन वेळापत्रक मिळवा.",
+    "action_weather": "हवामान डॅशबोर्ड",
+    "action_weather_desc": "शेतीच्या सल्ल्यासह सध्याचे हवामान.",
+    "action_chatbot": "AI सहाय्यक",
+    "action_chatbot_desc": "तुमच्या भाषेत कोणताही शेतीचा प्रश्न विचारा.",
+    "action_market": "बाजारभाव",
+    "action_market_desc": "तुमच्या परिसरातील सध्याचे पीक भाव तपासा.",
+    "action_reports": "माझे अहवाल",
+    "action_reports_desc": "मागील स्कॅनचे PDF अहवाल डाउनलोड करा.",
+    "badge_ai": "AI"
+  },
   "source_badge": {
     "kindwise": "Kindwise API",
     "local_model": "स्थानिक मॉडेल (ऑफलाइन फॉलबॅक)",
-    "local_model_warning": "हा निकाल ऑफलाइन फॉलबॅक मॉडेलद्वारे तयार केला आहे. PlantVillage डेटासेटच्या बाहेरील पिकांसाठी अचूकता मर्यादित असू शकते."
+    "local_model_warning": "हा निकाल ऑफलाइन फॉलबॅक मॉडेलद्वारे तयार केला आहे."
   },
   "common": {
     "loading": "लोड होत आहे...",
     "error": "काहीतरी चुकले. कृपया पुन्हा प्रयत्न करा.",
     "last_updated": "शेवटचे अपडेट",
-    "api_unavailable": "API अनुपलब्ध — कॅश केलेला डेटा दाखवत आहे"
+    "api_unavailable": "API अनुपलब्ध — कॅश केलेला डेटा दाखवत आहे",
+    "optional": "पर्यायी"
   }
 }

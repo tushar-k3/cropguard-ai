@@ -2,7 +2,12 @@
   "nav": {
     "login": "लॉग इन",
     "register": "शुरू करें",
-    "dashboard": "डैशबोर्ड"
+    "dashboard": "डैशबोर्ड",
+    "scanner": "स्कैनर",
+    "crop": "फसल",
+    "weather": "मौसम",
+    "chatbot": "सहायक",
+    "logout": "लॉग आउट"
   },
   "landing": {
     "badge": "AI-संचालित स्मार्ट कृषि प्लेटफ़ॉर्म",
@@ -33,15 +38,77 @@
     "chatbot_title": "AI चैटबॉट",
     "chatbot_desc": "अंग्रेजी, हिंदी या मराठी में खेती के सवाल पूछें।"
   },
+  "auth": {
+    "login_title": "वापस स्वागत है",
+    "login_subtitle": "अपने CropGuard AI खाते में साइन इन करें",
+    "login_button": "साइन इन करें",
+    "login_link": "साइन इन करें",
+    "register_title": "खाता बनाएं",
+    "register_subtitle": "CropGuard AI से जुड़ें — यह मुफ़्त है",
+    "register_button": "खाता बनाएं",
+    "register_link": "बनाएं",
+    "username": "उपयोगकर्ता नाम",
+    "username_placeholder": "aapka_naam",
+    "email": "ईमेल पता",
+    "email_placeholder": "aap@example.com",
+    "first_name": "पहला नाम",
+    "first_name_placeholder": "रमेश",
+    "last_name": "अंतिम नाम",
+    "last_name_placeholder": "पाटील",
+    "phone": "फ़ोन नंबर",
+    "phone_placeholder": "+91 98765 43210",
+    "location": "आपका गाँव / जिला",
+    "location_placeholder": "जैसे नासिक, महाराष्ट्र",
+    "preferred_language": "पसंदीदा भाषा",
+    "password": "पासवर्ड",
+    "password_placeholder": "कम से कम 8 अक्षर",
+    "confirm_password": "पासवर्ड की पुष्टि करें",
+    "confirm_password_placeholder": "पासवर्ड दोबारा दर्ज करें",
+    "invalid_credentials": "गलत उपयोगकर्ता नाम या पासवर्ड।",
+    "no_account": "खाता नहीं है?",
+    "have_account": "पहले से खाता है?"
+  },
+  "dashboard": {
+    "good_morning": "सुप्रभात",
+    "good_afternoon": "नमस्कार",
+    "good_evening": "शुभ संध्या",
+    "welcome_subtitle": "आज आप क्या करना चाहेंगे?",
+    "stat_scans": "कुल स्कैन",
+    "stat_diseases": "मिले रोग",
+    "stat_crops": "सुझाई गई फसलें",
+    "stat_reports": "बनाई गई रिपोर्टें",
+    "quick_actions": "त्वरित कार्य",
+    "recent_activity": "हालिया गतिविधि",
+    "no_activity": "अभी कोई गतिविधि नहीं है। पौधे की स्कैनिंग या फसल सिफारिश से शुरू करें।",
+    "start_scanning": "पौधा स्कैन करें",
+    "action_scan": "पौधा स्कैनर",
+    "action_scan_desc": "फोटो से पौधे की पहचान करें और रोग पहचानें।",
+    "action_crop": "फसल सिफारिश",
+    "action_crop_desc": "अपनी मिट्टी और जलवायु के लिए सबसे अच्छी फसल पाएं।",
+    "action_fertilizer": "उर्वरक सलाह",
+    "action_fertilizer_desc": "अपनी फसल और मिट्टी के लिए सही उर्वरक खोजें।",
+    "action_irrigation": "सिंचाई योजना",
+    "action_irrigation_desc": "पानी की आवश्यकता और सिंचाई शेड्यूल पाएं।",
+    "action_weather": "मौसम डैशबोर्ड",
+    "action_weather_desc": "खेती की सलाह के साथ वर्तमान मौसम।",
+    "action_chatbot": "AI सहायक",
+    "action_chatbot_desc": "अपनी भाषा में कोई भी खेती का सवाल पूछें।",
+    "action_market": "बाजार भाव",
+    "action_market_desc": "अपने क्षेत्र में वर्तमान फसल भाव देखें।",
+    "action_reports": "मेरी रिपोर्टें",
+    "action_reports_desc": "पुराने स्कैन की PDF रिपोर्ट डाउनलोड करें।",
+    "badge_ai": "AI"
+  },
   "source_badge": {
     "kindwise": "Kindwise API",
     "local_model": "स्थानीय मॉडल (ऑफ़लाइन फ़ॉलबैक)",
-    "local_model_warning": "यह परिणाम ऑफ़लाइन फ़ॉलबैक मॉडल द्वारा उत्पन्न किया गया है। PlantVillage डेटासेट के बाहर की फसलों के लिए सटीकता सीमित हो सकती है।"
+    "local_model_warning": "यह परिणाम ऑफ़लाइन फ़ॉलबैक मॉडल द्वारा उत्पन्न किया गया है।"
   },
   "common": {
     "loading": "लोड हो रहा है...",
     "error": "कुछ गलत हुआ। कृपया पुनः प्रयास करें।",
     "last_updated": "अंतिम अपडेट",
-    "api_unavailable": "API अनुपलब्ध — कैश डेटा दिखाया जा रहा है"
+    "api_unavailable": "API अनुपलब्ध — कैश डेटा दिखाया जा रहा है",
+    "optional": "वैकल्पिक"
   }
 }
