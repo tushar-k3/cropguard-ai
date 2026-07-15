@@ -1,0 +1,27 @@
+# ── Python / Django ──
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/**/*.pyc
+backend/db.sqlite3
+backend/.env
+backend/staticfiles/
+backend/media/
+*.egg-info/
+
+# ── Node / React ──
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo
