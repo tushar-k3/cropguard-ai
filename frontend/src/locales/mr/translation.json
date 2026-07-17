@@ -79,7 +79,7 @@
     "stat_reports": "तयार केलेले अहवाल",
     "quick_actions": "त्वरित क्रिया",
     "recent_activity": "अलीकडील क्रियाकलाप",
-    "no_activity": "अजून कोणताही क्रियाकलाप नाही. झाड स्कॅन करून किंवा पीक शिफारस घेऊन सुरुवात करा.",
+    "no_activity": "अजून कोणताही क्रियाकलाप नाही.",
     "start_scanning": "झाड स्कॅन करा",
     "action_scan": "झाड स्कॅनर",
     "action_scan_desc": "फोटोवरून झाड ओळखा आणि रोग शोधा.",
@@ -99,10 +99,46 @@
     "action_reports_desc": "मागील स्कॅनचे PDF अहवाल डाउनलोड करा.",
     "badge_ai": "AI"
   },
+  "scanner": {
+    "title": "झाड स्कॅनर",
+    "subtitle": "झाड ओळखण्यासाठी आणि रोग शोधण्यासाठी फोटो अपलोड करा किंवा घ्या",
+    "drop_title": "येथे तुमच्या झाडाचा फोटो टाका",
+    "drop_subtitle": "किंवा फाइल्स ब्राउझ करण्यासाठी क्लिक करा",
+    "btn_upload": "गॅलरीतून अपलोड करा",
+    "btn_camera": "कॅमेरा वापरा",
+    "btn_change": "प्रतिमा बदला",
+    "btn_scan": "रोगांसाठी स्कॅन करा",
+    "scanning": "झाडाचे विश्लेषण होत आहे...",
+    "selected_file": "निवडलेली फाइल",
+    "supported_formats": "समर्थित: JPEG, PNG, WebP — कमाल 10MB",
+    "api_note": "निकाल Kindwise AI द्वारे चालवले जातात. सेवा अनुपलब्ध असल्यास, आमचे ऑफलाइन मॉडेल आपोआप वापरले जाईल.",
+    "error_file_type": "कृपया JPEG, PNG किंवा WebP प्रतिमा अपलोड करा.",
+    "error_file_size": "प्रतिमा खूप मोठी आहे. कमाल आकार 10MB आहे."
+  },
+  "results": {
+    "identified_plant": "ओळखलेले झाड",
+    "unknown_plant": "अज्ञात झाड",
+    "identification_confidence": "ओळखीची विश्वासार्हता",
+    "confidence": "विश्वास",
+    "healthy": "झाड निरोगी दिसते",
+    "disease_detected": "रोग आढळला",
+    "diseases_found": "आढळलेले रोग",
+    "plant_healthy": "तुमचे झाड निरोगी दिसते!",
+    "plant_healthy_desc": "कोणताही रोग आढळला नाही. चांगली शेती सुरू ठेवा.",
+    "biological_treatment": "जैविक उपचार",
+    "chemical_treatment": "रासायनिक उपचार",
+    "prevention": "प्रतिबंध टिप्स",
+    "also_known_as": "याला असेही ओळखले जाते",
+    "unsupported_crop_warning": "हे झाड समर्थित पीक डेटासेटच्या बाहेर आहे. AI-चालित निकालांसाठी इंटरनेटसह पुन्हा प्रयत्न करा.",
+    "no_result": "कोणताही स्कॅन निकाल आढळला नाही.",
+    "go_to_scanner": "स्कॅनरवर जा",
+    "scan_another": "आणखी एक झाड स्कॅन करा",
+    "back": "स्कॅनरवर परत जा"
+  },
   "source_badge": {
-    "kindwise": "Kindwise API",
-    "local_model": "स्थानिक मॉडेल (ऑफलाइन फॉलबॅक)",
-    "local_model_warning": "हा निकाल ऑफलाइन फॉलबॅक मॉडेलद्वारे तयार केला आहे."
+    "kindwise": "Kindwise AI",
+    "local_model": "ऑफलाइन मॉडेल",
+    "local_model_warning": "हा निकाल ऑफलाइन फॉलबॅक मॉडेलद्वारे तयार केला आहे. PlantVillage डेटासेटच्या बाहेरील पिकांसाठी अचूकता मर्यादित असू शकते."
   },
   "common": {
     "loading": "लोड होत आहे...",

@@ -79,7 +79,7 @@
     "stat_reports": "बनाई गई रिपोर्टें",
     "quick_actions": "त्वरित कार्य",
     "recent_activity": "हालिया गतिविधि",
-    "no_activity": "अभी कोई गतिविधि नहीं है। पौधे की स्कैनिंग या फसल सिफारिश से शुरू करें।",
+    "no_activity": "अभी कोई गतिविधि नहीं है।",
     "start_scanning": "पौधा स्कैन करें",
     "action_scan": "पौधा स्कैनर",
     "action_scan_desc": "फोटो से पौधे की पहचान करें और रोग पहचानें।",
@@ -99,10 +99,46 @@
     "action_reports_desc": "पुराने स्कैन की PDF रिपोर्ट डाउनलोड करें।",
     "badge_ai": "AI"
   },
+  "scanner": {
+    "title": "पौधा स्कैनर",
+    "subtitle": "पौधे की पहचान और रोग पहचान के लिए फोटो अपलोड करें या लें",
+    "drop_title": "यहाँ अपनी पौधे की फोटो डालें",
+    "drop_subtitle": "या फ़ाइलें ब्राउज़ करने के लिए क्लिक करें",
+    "btn_upload": "गैलरी से अपलोड करें",
+    "btn_camera": "कैमरा उपयोग करें",
+    "btn_change": "छवि बदलें",
+    "btn_scan": "रोगों के लिए स्कैन करें",
+    "scanning": "पौधे का विश्लेषण हो रहा है...",
+    "selected_file": "चुनी गई फ़ाइल",
+    "supported_formats": "समर्थित: JPEG, PNG, WebP — अधिकतम 10MB",
+    "api_note": "परिणाम Kindwise AI द्वारा संचालित हैं। यदि सेवा उपलब्ध नहीं है, तो हमारा ऑफ़लाइन मॉडल स्वचालित रूप से उपयोग किया जाएगा।",
+    "error_file_type": "कृपया JPEG, PNG या WebP छवि अपलोड करें।",
+    "error_file_size": "छवि बहुत बड़ी है। अधिकतम आकार 10MB है।"
+  },
+  "results": {
+    "identified_plant": "पहचाना गया पौधा",
+    "unknown_plant": "अज्ञात पौधा",
+    "identification_confidence": "पहचान की विश्वसनीयता",
+    "confidence": "विश्वास",
+    "healthy": "पौधा स्वस्थ दिखता है",
+    "disease_detected": "रोग पहचाना गया",
+    "diseases_found": "मिले रोग",
+    "plant_healthy": "आपका पौधा स्वस्थ दिखता है!",
+    "plant_healthy_desc": "कोई रोग नहीं पाया गया। अच्छी खेती जारी रखें।",
+    "biological_treatment": "जैविक उपचार",
+    "chemical_treatment": "रासायनिक उपचार",
+    "prevention": "रोकथाम के सुझाव",
+    "also_known_as": "यह भी जाना जाता है",
+    "unsupported_crop_warning": "यह पौधा समर्थित फसल डेटासेट के बाहर है। AI-संचालित परिणामों के लिए इंटरनेट के साथ फिर से प्रयास करें।",
+    "no_result": "कोई स्कैन परिणाम नहीं मिला।",
+    "go_to_scanner": "स्कैनर पर जाएं",
+    "scan_another": "एक और पौधा स्कैन करें",
+    "back": "स्कैनर पर वापस जाएं"
+  },
   "source_badge": {
-    "kindwise": "Kindwise API",
-    "local_model": "स्थानीय मॉडल (ऑफ़लाइन फ़ॉलबैक)",
-    "local_model_warning": "यह परिणाम ऑफ़लाइन फ़ॉलबैक मॉडल द्वारा उत्पन्न किया गया है।"
+    "kindwise": "Kindwise AI",
+    "local_model": "ऑफ़लाइन मॉडल",
+    "local_model_warning": "यह परिणाम ऑफ़लाइन फ़ॉलबैक मॉडल द्वारा उत्पन्न किया गया है। PlantVillage डेटासेट के बाहर की फसलों के लिए सटीकता सीमित हो सकती है।"
   },
   "common": {
     "loading": "लोड हो रहा है...",

@@ -7,11 +7,14 @@ urlpatterns = [
     path('health/', views.health_check, name='health-check'),
     path('auth/register/', views.register, name='register'),
     path('auth/login/', views.LoginView.as_view(), name='login'),
-
-    # Token refresh — used by Axios interceptor automatically
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
 
-    # Protected
+    # Protected — Auth
     path('auth/logout/', views.logout, name='logout'),
     path('auth/profile/', views.profile, name='profile'),
+
+    # Protected — Scanner
+    path('scan/', views.scan_plant, name='scan-plant'),
+    path('scan/history/', views.scan_history, name='scan-history'),
+    path('scan/<int:scan_id>/', views.scan_detail, name='scan-detail'),
 ]

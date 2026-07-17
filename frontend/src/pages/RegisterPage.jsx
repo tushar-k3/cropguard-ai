@@ -195,15 +195,22 @@ export default function RegisterPage() {
                 {t('auth.preferred_language')}
               </label>
               <select
-                name="preferred_language"
-                value={formData.preferred_language}
-                onChange={handleChange}
-                className="input-field"
-              >
-                <option value="en">English</option>
-                <option value="hi">हिंदी</option>
-                <option value="mr">मराठी</option>
-              </select>
+  name="preferred_language"
+  value={formData.preferred_language}
+  onChange={handleChange}
+  className="input-field"
+  style={{ colorScheme: 'dark' }}
+>
+  <option value="en" style={{ backgroundColor: '#111827', color: '#f3f4f6' }}>
+    English
+  </option>
+  <option value="hi" style={{ backgroundColor: '#111827', color: '#f3f4f6' }}>
+    हिंदी
+  </option>
+  <option value="mr" style={{ backgroundColor: '#111827', color: '#f3f4f6' }}>
+    मराठी
+  </option>
+</select>
             </div>
 
             {/* Password */}
