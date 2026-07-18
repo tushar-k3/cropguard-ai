@@ -75,9 +75,6 @@ class CropRecommendation(models.Model):
 
 
 class FertilizerRecommendation(models.Model):
-    """
-    Stores each fertilizer recommendation request and result.
-    """
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='fertilizer_recommendations'
     )
@@ -95,4 +92,29 @@ class FertilizerRecommendation(models.Model):
 
     class Meta:
         db_table = 'fertilizer_recommendations'
+        ordering = ['-created_at']
+
+
+class IrrigationRecommendation(models.Model):
+    """
+    Stores each irrigation recommendation request and result.
+    """
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='irrigation_recommendations'
+    )
+    crop = models.CharField(max_length=100)
+    soil_type = models.CharField(max_length=50)
+    temperature = models.FloatField()
+    humidity = models.FloatField()
+    rainfall = models.FloatField()
+    water_requirement = models.CharField(max_length=200)
+    confidence = models.FloatField(default=0.0)
+    result_data = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} — {self.crop} irrigation"
+
+    class Meta:
+        db_table = 'irrigation_recommendations'
         ordering = ['-created_at']

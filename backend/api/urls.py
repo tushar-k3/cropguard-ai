@@ -25,4 +25,8 @@ urlpatterns = [
     # Protected — Fertilizer
     path('fertilizer/recommend/', views.recommend_fertilizer, name='fertilizer-recommend'),
     path('fertilizer/history/', views.fertilizer_history, name='fertilizer-history'),
+
+    # Protected — Irrigation
+    path('irrigation/recommend/', views.recommend_irrigation, name='irrigation-recommend'),
+    path('irrigation/history/', views.irrigation_history, name='irrigation-history'),
 ]

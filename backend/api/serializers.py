@@ -2,7 +2,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import UserProfile, ScanResult, CropRecommendation, FertilizerRecommendation
+from .models import (
+    UserProfile, ScanResult, CropRecommendation,
+    FertilizerRecommendation, IrrigationRecommendation
+)
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -156,3 +159,24 @@ class FertilizerInputSerializer(serializers.Serializer):
     N = serializers.FloatField(min_value=0, max_value=300)
     P = serializers.FloatField(min_value=0, max_value=300)
     K = serializers.FloatField(min_value=0, max_value=300)
+
+
+class IrrigationRecommendationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IrrigationRecommendation
+        fields = [
+            'id', 'crop', 'soil_type', 'temperature', 'humidity',
+            'rainfall', 'water_requirement', 'confidence',
+            'result_data', 'created_at',
+        ]
+        read_only_fields = fields
+
+
+class IrrigationInputSerializer(serializers.Serializer):
+    crop = serializers.CharField(max_length=100)
+    soil_type = serializers.ChoiceField(choices=[
+        'sandy', 'loamy', 'clay', 'silt', 'black', 'red', 'alluvial'
+    ])
+    temperature = serializers.FloatField(min_value=0, max_value=50)
+    humidity = serializers.FloatField(min_value=0, max_value=100)
+    rainfall = serializers.FloatField(min_value=0, max_value=500)

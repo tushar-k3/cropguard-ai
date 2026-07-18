@@ -18,12 +18,18 @@ from .serializers import (
     CropInputSerializer,
     FertilizerRecommendationSerializer,
     FertilizerInputSerializer,
+    IrrigationRecommendationSerializer,
+    IrrigationInputSerializer,
 )
-from .models import ScanResult, CropRecommendation, FertilizerRecommendation
+from .models import (
+    ScanResult, CropRecommendation,
+    FertilizerRecommendation, IrrigationRecommendation
+)
 from .ml.kindwise import call_kindwise
 from .ml.fallback import run_fallback
 from .ml.crop_model import predict_crop
 from .ml.fertilizer_model import predict_fertilizer
+from .ml.irrigation_model import predict_irrigation
 
 logger = logging.getLogger(__name__)
 
@@ -94,10 +100,15 @@ def profile(request):
     try:
         user_profile = request.user.profile
     except Exception:
-        return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {'error': 'Profile not found.'},
+            status=status.HTTP_404_NOT_FOUND
+        )
     if request.method == 'GET':
         return Response(UserProfileSerializer(user_profile).data)
-    serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+    serializer = UserProfileSerializer(
+        user_profile, data=request.data, partial=True
+    )
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
@@ -113,7 +124,10 @@ def profile(request):
 def scan_plant(request):
     image_file = request.FILES.get('image')
     if not image_file:
-        return Response({'error': 'No image provided.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'error': 'No image provided.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
     if image_file.content_type not in allowed_types:
         return Response(
@@ -125,12 +139,13 @@ def scan_plant(request):
             {'error': 'Image too large. Maximum 10MB.'},
             status=status.HTTP_400_BAD_REQUEST
         )
-
     kindwise_result = call_kindwise(image_file)
     if kindwise_result['success']:
         result = kindwise_result
     else:
-        logger.warning(f"Kindwise failed: {kindwise_result.get('error')}. Using fallback.")
+        logger.warning(
+            f"Kindwise failed: {kindwise_result.get('error')}. Using fallback."
+        )
         fallback_result = run_fallback(image_file)
         if fallback_result['success']:
             result = fallback_result
@@ -140,7 +155,6 @@ def scan_plant(request):
                 'kindwise_error': kindwise_result.get('error'),
                 'fallback_error': fallback_result.get('error'),
             }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-
     try:
         scan = ScanResult.objects.create(
             user=request.user,
@@ -157,7 +171,6 @@ def scan_plant(request):
     except Exception as e:
         logger.error(f"Failed to save scan: {e}")
         result['scan_id'] = None
-
     return Response(result)
 
 
@@ -165,7 +178,9 @@ def scan_plant(request):
 @permission_classes([IsAuthenticated])
 def scan_history(request):
     scans = ScanResult.objects.filter(user=request.user)[:20]
-    serializer = ScanResultSerializer(scans, many=True, context={'request': request})
+    serializer = ScanResultSerializer(
+        scans, many=True, context={'request': request}
+    )
     return Response({'count': scans.count(), 'results': serializer.data})
 
 
@@ -175,8 +190,13 @@ def scan_detail(request, scan_id):
     try:
         scan = ScanResult.objects.get(id=scan_id, user=request.user)
     except ScanResult.DoesNotExist:
-        return Response({'error': 'Scan not found.'}, status=status.HTTP_404_NOT_FOUND)
-    return Response(ScanResultSerializer(scan, context={'request': request}).data)
+        return Response(
+            {'error': 'Scan not found.'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    return Response(
+        ScanResultSerializer(scan, context={'request': request}).data
+    )
 
 
 # ─────────────────────────────────────────────
@@ -232,18 +252,63 @@ def crop_history(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def recommend_fertilizer(request):
-    """
-    Accepts crop name and soil NPK values.
-    Returns best fertilizer with application guidance.
-    """
     serializer = FertilizerInputSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    d = serializer.validated_data
+    result = predict_fertilizer(
+        N=d['N'], P=d['P'], K=d['K'], crop=d['crop'],
+    )
+    if not result['success']:
+        return Response(
+            {'error': result.get('error', 'Prediction failed.')},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+    try:
+        FertilizerRecommendation.objects.create(
+            user=request.user,
+            crop=d['crop'],
+            nitrogen=d['N'], phosphorus=d['P'], potassium=d['K'],
+            recommended_fertilizer=result['fertilizer'],
+            confidence=result['confidence'],
+            result_data=result,
+        )
+    except Exception as e:
+        logger.error(f"Failed to save fertilizer recommendation: {e}")
+    return Response(result)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def fertilizer_history(request):
+    recs = FertilizerRecommendation.objects.filter(user=request.user)[:20]
+    return Response({
+        'count': recs.count(),
+        'results': FertilizerRecommendationSerializer(recs, many=True).data,
+    })
+
+
+# ─────────────────────────────────────────────
+# Irrigation Recommendation
+# ─────────────────────────────────────────────
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def recommend_irrigation(request):
+    """
+    Accepts crop, soil type, and weather conditions.
+    Returns daily water requirement and irrigation schedule.
+    """
+    serializer = IrrigationInputSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     d = serializer.validated_data
-    result = predict_fertilizer(
-        N=d['N'], P=d['P'], K=d['K'],
+    result = predict_irrigation(
         crop=d['crop'],
+        soil_type=d['soil_type'],
+        temperature=d['temperature'],
+        humidity=d['humidity'],
+        rainfall=d['rainfall'],
     )
 
     if not result['success']:
@@ -253,28 +318,29 @@ def recommend_fertilizer(request):
         )
 
     try:
-        FertilizerRecommendation.objects.create(
+        IrrigationRecommendation.objects.create(
             user=request.user,
             crop=d['crop'],
-            nitrogen=d['N'],
-            phosphorus=d['P'],
-            potassium=d['K'],
-            recommended_fertilizer=result['fertilizer'],
+            soil_type=d['soil_type'],
+            temperature=d['temperature'],
+            humidity=d['humidity'],
+            rainfall=d['rainfall'],
+            water_requirement=result['label'],
             confidence=result['confidence'],
             result_data=result,
         )
     except Exception as e:
-        logger.error(f"Failed to save fertilizer recommendation: {e}")
+        logger.error(f"Failed to save irrigation recommendation: {e}")
 
     return Response(result)
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def fertilizer_history(request):
-    """Returns the user's last 20 fertilizer recommendations."""
-    recs = FertilizerRecommendation.objects.filter(user=request.user)[:20]
+def irrigation_history(request):
+    """Returns the user's last 20 irrigation recommendations."""
+    recs = IrrigationRecommendation.objects.filter(user=request.user)[:20]
     return Response({
         'count': recs.count(),
-        'results': FertilizerRecommendationSerializer(recs, many=True).data,
+        'results': IrrigationRecommendationSerializer(recs, many=True).data,
     })

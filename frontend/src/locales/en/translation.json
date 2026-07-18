@@ -193,4 +193,32 @@
   "tip_2": "Fertilizer need depends on both crop type and current soil levels",
   "tip_3": "Apply fertilizers at the right growth stage for best results"
 }
+,
+"irrigation": {
+  "title": "Irrigation Planning",
+  "subtitle": "Enter your crop, soil type, and weather conditions to get an irrigation schedule",
+  "crop_name": "Crop Name",
+  "crop_placeholder": "e.g. rice, wheat, tomato",
+  "soil_type": "Soil Type",
+  "section_weather": "Current Weather Conditions",
+  "temperature": "Temperature",
+  "humidity": "Humidity",
+  "rainfall": "Recent / Expected Rainfall",
+  "btn_recommend": "Get Irrigation Schedule",
+  "analyzing": "Calculating...",
+  "water_requirement": "Water Requirement",
+  "confidence": "Confidence",
+  "schedule": "Irrigation Schedule",
+  "per_day": "Water Per Day",
+  "frequency": "Irrigation Frequency",
+  "per_week": "Total Per Week",
+  "best_time": "Best Time to Irrigate",
+  "method": "Recommended Method",
+  "tips": "Irrigation Tips",
+  "unknown_warning": "Crop or soil type not found in database. Showing estimate based on similar conditions.",
+  "empty_state": "Enter your crop, soil type, and current weather to get a personalized irrigation schedule.",
+  "tip_1": "Irrigate in the early morning to reduce evaporation losses",
+  "tip_2": "Check soil moisture at 10cm depth before irrigating",
+  "tip_3": "Reduce irrigation during and after rainfall"
+}
 }
