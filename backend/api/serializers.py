@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import UserProfile, ScanResult, CropRecommendation
+from .models import UserProfile, ScanResult, CropRecommendation, FertilizerRecommendation
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -132,10 +132,6 @@ class CropRecommendationSerializer(serializers.ModelSerializer):
 
 
 class CropInputSerializer(serializers.Serializer):
-    """
-    Validates the incoming crop recommendation request.
-    Ranges are based on realistic agronomic values.
-    """
     N = serializers.FloatField(min_value=0, max_value=300)
     P = serializers.FloatField(min_value=0, max_value=300)
     K = serializers.FloatField(min_value=0, max_value=300)
@@ -143,3 +139,20 @@ class CropInputSerializer(serializers.Serializer):
     humidity = serializers.FloatField(min_value=0, max_value=100)
     ph = serializers.FloatField(min_value=0, max_value=14)
     rainfall = serializers.FloatField(min_value=0, max_value=500)
+
+
+class FertilizerRecommendationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FertilizerRecommendation
+        fields = [
+            'id', 'crop', 'nitrogen', 'phosphorus', 'potassium',
+            'recommended_fertilizer', 'confidence', 'result_data', 'created_at',
+        ]
+        read_only_fields = fields
+
+
+class FertilizerInputSerializer(serializers.Serializer):
+    crop = serializers.CharField(max_length=100)
+    N = serializers.FloatField(min_value=0, max_value=300)
+    P = serializers.FloatField(min_value=0, max_value=300)
+    K = serializers.FloatField(min_value=0, max_value=300)

@@ -18,7 +18,11 @@ urlpatterns = [
     path('scan/history/', views.scan_history, name='scan-history'),
     path('scan/<int:scan_id>/', views.scan_detail, name='scan-detail'),
 
-    # Protected — Crop Recommendation
+    # Protected — Crop
     path('crop/recommend/', views.recommend_crop, name='crop-recommend'),
     path('crop/history/', views.crop_history, name='crop-history'),
+
+    # Protected — Fertilizer
+    path('fertilizer/recommend/', views.recommend_fertilizer, name='fertilizer-recommend'),
+    path('fertilizer/history/', views.fertilizer_history, name='fertilizer-history'),
 ]

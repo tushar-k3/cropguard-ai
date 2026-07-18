@@ -168,4 +168,29 @@
     "api_unavailable": "API unavailable — showing cached data",
     "optional": "optional"
   }
+  ,
+"fertilizer": {
+  "title": "Fertilizer Recommendation",
+  "subtitle": "Enter your crop and soil nutrient levels to get the best fertilizer recommendation",
+  "crop_name": "Crop Name",
+  "crop_placeholder": "e.g. rice, wheat, tomato",
+  "crop_hint": "Type your crop name or select from suggestions",
+  "section_soil": "Current Soil Nutrient Levels",
+  "soil_hint": "Values from your soil test report (kg per hectare)",
+  "btn_recommend": "Get Fertilizer Recommendation",
+  "analyzing": "Analyzing...",
+  "recommended_fertilizer": "Recommended Fertilizer",
+  "confidence": "Confidence",
+  "application_guide": "Application Guide",
+  "best_for": "Best For",
+  "how_to_apply": "How to Apply",
+  "dosage": "Recommended Dosage",
+  "caution": "Caution",
+  "alternatives": "Other suitable fertilizers:",
+  "unknown_crop_warning": "Your crop was not found in our database. Showing general recommendation based on soil nutrients.",
+  "empty_state": "Enter your crop name and soil nutrient levels to get a personalized fertilizer recommendation.",
+  "tip_1": "Use your soil test report for accurate N, P, K values",
+  "tip_2": "Fertilizer need depends on both crop type and current soil levels",
+  "tip_3": "Apply fertilizers at the right growth stage for best results"
+}
 }

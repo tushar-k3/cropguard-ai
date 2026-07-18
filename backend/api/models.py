@@ -51,24 +51,16 @@ class ScanResult(models.Model):
 
 
 class CropRecommendation(models.Model):
-    """
-    Stores each crop recommendation request and result.
-    All inputs and outputs saved for dashboard statistics
-    and PDF report generation in Phase 10.
-    """
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='crop_recommendations'
     )
-    # Soil inputs
     nitrogen = models.FloatField()
     phosphorus = models.FloatField()
     potassium = models.FloatField()
-    # Climate inputs
     temperature = models.FloatField()
     humidity = models.FloatField()
     ph = models.FloatField()
     rainfall = models.FloatField()
-    # Result
     recommended_crop = models.CharField(max_length=100)
     confidence = models.FloatField(default=0.0)
     result_data = models.JSONField(default=dict)
@@ -79,4 +71,28 @@ class CropRecommendation(models.Model):
 
     class Meta:
         db_table = 'crop_recommendations'
+        ordering = ['-created_at']
+
+
+class FertilizerRecommendation(models.Model):
+    """
+    Stores each fertilizer recommendation request and result.
+    """
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='fertilizer_recommendations'
+    )
+    crop = models.CharField(max_length=100)
+    nitrogen = models.FloatField()
+    phosphorus = models.FloatField()
+    potassium = models.FloatField()
+    recommended_fertilizer = models.CharField(max_length=100)
+    confidence = models.FloatField(default=0.0)
+    result_data = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} — {self.recommended_fertilizer} for {self.crop}"
+
+    class Meta:
+        db_table = 'fertilizer_recommendations'
         ordering = ['-created_at']

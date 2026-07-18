@@ -16,11 +16,14 @@ from .serializers import (
     ScanResultSerializer,
     CropRecommendationSerializer,
     CropInputSerializer,
+    FertilizerRecommendationSerializer,
+    FertilizerInputSerializer,
 )
-from .models import ScanResult, CropRecommendation
+from .models import ScanResult, CropRecommendation, FertilizerRecommendation
 from .ml.kindwise import call_kindwise
 from .ml.fallback import run_fallback
 from .ml.crop_model import predict_crop
+from .ml.fertilizer_model import predict_fertilizer
 
 logger = logging.getLogger(__name__)
 
@@ -110,25 +113,20 @@ def profile(request):
 def scan_plant(request):
     image_file = request.FILES.get('image')
     if not image_file:
-        return Response(
-            {'error': 'No image provided.'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({'error': 'No image provided.'}, status=status.HTTP_400_BAD_REQUEST)
     allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
     if image_file.content_type not in allowed_types:
         return Response(
-            {'error': 'Invalid file type. Please upload a JPEG, PNG, or WebP image.'},
+            {'error': 'Invalid file type. Please upload JPEG, PNG, or WebP.'},
             status=status.HTTP_400_BAD_REQUEST
         )
     if image_file.size > 10 * 1024 * 1024:
         return Response(
-            {'error': 'Image too large. Maximum size is 10MB.'},
+            {'error': 'Image too large. Maximum 10MB.'},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    result = None
     kindwise_result = call_kindwise(image_file)
-
     if kindwise_result['success']:
         result = kindwise_result
     else:
@@ -187,14 +185,9 @@ def scan_detail(request, scan_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def recommend_crop(request):
-    """
-    Accepts soil and climate parameters, returns the best
-    crop recommendation using the trained Random Forest model.
-    """
     serializer = CropInputSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     d = serializer.validated_data
     result = predict_crop(
         N=d['N'], P=d['P'], K=d['K'],
@@ -203,6 +196,55 @@ def recommend_crop(request):
         ph=d['ph'],
         rainfall=d['rainfall'],
     )
+    if not result['success']:
+        return Response(
+            {'error': result.get('error', 'Prediction failed.')},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+    try:
+        CropRecommendation.objects.create(
+            user=request.user,
+            nitrogen=d['N'], phosphorus=d['P'], potassium=d['K'],
+            temperature=d['temperature'], humidity=d['humidity'],
+            ph=d['ph'], rainfall=d['rainfall'],
+            recommended_crop=result['crop'],
+            confidence=result['confidence'],
+            result_data=result,
+        )
+    except Exception as e:
+        logger.error(f"Failed to save crop recommendation: {e}")
+    return Response(result)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def crop_history(request):
+    recs = CropRecommendation.objects.filter(user=request.user)[:20]
+    return Response({
+        'count': recs.count(),
+        'results': CropRecommendationSerializer(recs, many=True).data,
+    })
+
+
+# ─────────────────────────────────────────────
+# Fertilizer Recommendation
+# ─────────────────────────────────────────────
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def recommend_fertilizer(request):
+    """
+    Accepts crop name and soil NPK values.
+    Returns best fertilizer with application guidance.
+    """
+    serializer = FertilizerInputSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    d = serializer.validated_data
+    result = predict_fertilizer(
+        N=d['N'], P=d['P'], K=d['K'],
+        crop=d['crop'],
+    )
 
     if not result['success']:
         return Response(
@@ -210,31 +252,29 @@ def recommend_crop(request):
             status=status.HTTP_503_SERVICE_UNAVAILABLE
         )
 
-    # Save to database
     try:
-        CropRecommendation.objects.create(
+        FertilizerRecommendation.objects.create(
             user=request.user,
+            crop=d['crop'],
             nitrogen=d['N'],
             phosphorus=d['P'],
             potassium=d['K'],
-            temperature=d['temperature'],
-            humidity=d['humidity'],
-            ph=d['ph'],
-            rainfall=d['rainfall'],
-            recommended_crop=result['crop'],
+            recommended_fertilizer=result['fertilizer'],
             confidence=result['confidence'],
             result_data=result,
         )
     except Exception as e:
-        logger.error(f"Failed to save crop recommendation: {e}")
+        logger.error(f"Failed to save fertilizer recommendation: {e}")
 
     return Response(result)
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def crop_history(request):
-    """Returns the user's last 20 crop recommendations."""
-    recs = CropRecommendation.objects.filter(user=request.user)[:20]
-    serializer = CropRecommendationSerializer(recs, many=True)
-    return Response({'count': recs.count(), 'results': serializer.data})
+def fertilizer_history(request):
+    """Returns the user's last 20 fertilizer recommendations."""
+    recs = FertilizerRecommendation.objects.filter(user=request.user)[:20]
+    return Response({
+        'count': recs.count(),
+        'results': FertilizerRecommendationSerializer(recs, many=True).data,
+    })
