@@ -14,10 +14,13 @@ from .serializers import (
     CustomTokenObtainPairSerializer,
     UserProfileSerializer,
     ScanResultSerializer,
+    CropRecommendationSerializer,
+    CropInputSerializer,
 )
-from .models import ScanResult
+from .models import ScanResult, CropRecommendation
 from .ml.kindwise import call_kindwise
 from .ml.fallback import run_fallback
+from .ml.crop_model import predict_crop
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +38,6 @@ def health_check(request):
         db_label = 'PostgreSQL (production)'
     else:
         db_label = db_engine
-
     return Response({
         'status': 'ok',
         'message': 'CropGuard AI API is running',
@@ -55,10 +57,8 @@ def register(request):
     serializer = RegisterSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     user = serializer.save()
     refresh = RefreshToken.for_user(user)
-
     return Response({
         'message': 'Account created successfully.',
         'access': str(refresh.access_token),
@@ -82,7 +82,7 @@ class LoginView(TokenObtainPairView):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout(request):
-    return Response({'message': 'Logged out successfully.'}, status=status.HTTP_200_OK)
+    return Response({'message': 'Logged out successfully.'})
 
 
 @api_view(['GET', 'PATCH'])
@@ -92,17 +92,13 @@ def profile(request):
         user_profile = request.user.profile
     except Exception:
         return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
-
     if request.method == 'GET':
-        serializer = UserProfileSerializer(user_profile)
+        return Response(UserProfileSerializer(user_profile).data)
+    serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
         return Response(serializer.data)
-
-    if request.method == 'PATCH':
-        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # ─────────────────────────────────────────────
@@ -112,74 +108,41 @@ def profile(request):
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser])
 def scan_plant(request):
-    """
-    Accepts an uploaded image and returns plant identification
-    and disease detection results.
-
-    Detection flow:
-    1. Try Kindwise API (primary)
-    2. If Kindwise fails/limit exceeded → use MobileNetV2 fallback
-    3. Save result to database
-    4. Return result with source clearly labeled
-    """
     image_file = request.FILES.get('image')
-
     if not image_file:
         return Response(
-            {'error': 'No image provided. Please upload an image.'},
+            {'error': 'No image provided.'},
             status=status.HTTP_400_BAD_REQUEST
         )
-
-    # Validate file type
     allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
     if image_file.content_type not in allowed_types:
         return Response(
             {'error': 'Invalid file type. Please upload a JPEG, PNG, or WebP image.'},
             status=status.HTTP_400_BAD_REQUEST
         )
-
-    # Validate file size — 10MB max
     if image_file.size > 10 * 1024 * 1024:
         return Response(
-            {'error': 'Image is too large. Maximum size is 10MB.'},
+            {'error': 'Image too large. Maximum size is 10MB.'},
             status=status.HTTP_400_BAD_REQUEST
         )
 
     result = None
-    used_fallback = False
-
-    # ── Step 1: Try Kindwise ──
-    logger.info(f"Scan request from user {request.user.username}")
     kindwise_result = call_kindwise(image_file)
 
     if kindwise_result['success']:
         result = kindwise_result
-        logger.info("Kindwise scan successful.")
     else:
-        # ── Step 2: Fall back to local model ──
-        logger.warning(
-            f"Kindwise failed ({kindwise_result.get('error')}). "
-            "Switching to MobileNetV2 fallback."
-        )
-        used_fallback = True
+        logger.warning(f"Kindwise failed: {kindwise_result.get('error')}. Using fallback.")
         fallback_result = run_fallback(image_file)
-
         if fallback_result['success']:
             result = fallback_result
-            logger.info("Fallback model scan successful.")
         else:
-            # Both failed
             return Response({
-                'error': (
-                    'Both the AI service and offline model are unavailable. '
-                    'Please check your internet connection and try again.'
-                ),
+                'error': 'Both the AI service and offline model are unavailable.',
                 'kindwise_error': kindwise_result.get('error'),
                 'fallback_error': fallback_result.get('error'),
-                'fallback_model_available': fallback_result.get('model_available', False),
             }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
-    # ── Step 3: Save to database ──
     try:
         scan = ScanResult.objects.create(
             user=request.user,
@@ -194,39 +157,84 @@ def scan_plant(request):
         )
         result['scan_id'] = scan.id
     except Exception as e:
-        logger.error(f"Failed to save scan result: {e}")
-        # Don't fail the request — return result even if save fails
+        logger.error(f"Failed to save scan: {e}")
         result['scan_id'] = None
 
-    return Response(result, status=status.HTTP_200_OK)
+    return Response(result)
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def scan_history(request):
-    """
-    Returns the authenticated user's scan history, newest first.
-    Limited to 20 most recent scans for performance.
-    """
     scans = ScanResult.objects.filter(user=request.user)[:20]
     serializer = ScanResultSerializer(scans, many=True, context={'request': request})
-    return Response({
-        'count': scans.count(),
-        'results': serializer.data,
-    })
+    return Response({'count': scans.count(), 'results': serializer.data})
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def scan_detail(request, scan_id):
-    """
-    Returns a single scan result by ID.
-    Users can only access their own scans.
-    """
     try:
         scan = ScanResult.objects.get(id=scan_id, user=request.user)
     except ScanResult.DoesNotExist:
         return Response({'error': 'Scan not found.'}, status=status.HTTP_404_NOT_FOUND)
+    return Response(ScanResultSerializer(scan, context={'request': request}).data)
 
-    serializer = ScanResultSerializer(scan, context={'request': request})
-    return Response(serializer.data)
+
+# ─────────────────────────────────────────────
+# Crop Recommendation
+# ─────────────────────────────────────────────
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def recommend_crop(request):
+    """
+    Accepts soil and climate parameters, returns the best
+    crop recommendation using the trained Random Forest model.
+    """
+    serializer = CropInputSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    d = serializer.validated_data
+    result = predict_crop(
+        N=d['N'], P=d['P'], K=d['K'],
+        temperature=d['temperature'],
+        humidity=d['humidity'],
+        ph=d['ph'],
+        rainfall=d['rainfall'],
+    )
+
+    if not result['success']:
+        return Response(
+            {'error': result.get('error', 'Prediction failed.')},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+
+    # Save to database
+    try:
+        CropRecommendation.objects.create(
+            user=request.user,
+            nitrogen=d['N'],
+            phosphorus=d['P'],
+            potassium=d['K'],
+            temperature=d['temperature'],
+            humidity=d['humidity'],
+            ph=d['ph'],
+            rainfall=d['rainfall'],
+            recommended_crop=result['crop'],
+            confidence=result['confidence'],
+            result_data=result,
+        )
+    except Exception as e:
+        logger.error(f"Failed to save crop recommendation: {e}")
+
+    return Response(result)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def crop_history(request):
+    """Returns the user's last 20 crop recommendations."""
+    recs = CropRecommendation.objects.filter(user=request.user)[:20]
+    serializer = CropRecommendationSerializer(recs, many=True)
+    return Response({'count': recs.count(), 'results': serializer.data})

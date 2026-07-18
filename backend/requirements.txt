@@ -5,3 +5,9 @@ django-cors-headers==4.7.0
 python-decouple==3.8
 Pillow==11.2.1
 psycopg[binary]==3.2.9
+requests==2.32.3
+numpy==2.2.6
+tensorflow-cpu==2.20.0
+scikit-learn==1.6.1
+pandas==2.2.3
+joblib==1.4.2

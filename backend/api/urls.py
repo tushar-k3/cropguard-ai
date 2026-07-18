@@ -17,4 +17,8 @@ urlpatterns = [
     path('scan/', views.scan_plant, name='scan-plant'),
     path('scan/history/', views.scan_history, name='scan-history'),
     path('scan/<int:scan_id>/', views.scan_detail, name='scan-detail'),
+
+    # Protected — Crop Recommendation
+    path('crop/recommend/', views.recommend_crop, name='crop-recommend'),
+    path('crop/history/', views.crop_history, name='crop-history'),
 ]

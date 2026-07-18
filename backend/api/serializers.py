@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import UserProfile, ScanResult
+from .models import UserProfile, ScanResult, CropRecommendation
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -20,8 +20,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'username', 'email', 'first_name', 'last_name',
-            'password', 'password2',
-            'phone', 'location', 'preferred_language'
+            'password', 'password2', 'phone', 'location', 'preferred_language'
         ]
         extra_kwargs = {
             'email': {'required': True},
@@ -41,7 +40,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         location = validated_data.pop('location', '')
         preferred_language = validated_data.pop('preferred_language', 'en')
         validated_data.pop('password2')
-
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
@@ -50,9 +48,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             last_name=validated_data.get('last_name', ''),
         )
         UserProfile.objects.create(
-            user=user,
-            phone=phone,
-            location=location,
+            user=user, phone=phone, location=location,
             preferred_language=preferred_language,
         )
         return user
@@ -88,8 +84,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = [
             'username', 'email', 'first_name', 'last_name',
-            'phone', 'location', 'farm_size', 'preferred_language',
-            'created_at',
+            'phone', 'location', 'farm_size', 'preferred_language', 'created_at',
         ]
         read_only_fields = ['username', 'email', 'created_at']
 
@@ -107,10 +102,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class ScanResultSerializer(serializers.ModelSerializer):
-    """
-    Used for listing scan history and returning result details.
-    image field returns the full URL.
-    """
     image_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -127,3 +118,28 @@ class ScanResultSerializer(serializers.ModelSerializer):
         if obj.image and request:
             return request.build_absolute_uri(obj.image.url)
         return None
+
+
+class CropRecommendationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CropRecommendation
+        fields = [
+            'id', 'nitrogen', 'phosphorus', 'potassium',
+            'temperature', 'humidity', 'ph', 'rainfall',
+            'recommended_crop', 'confidence', 'result_data', 'created_at',
+        ]
+        read_only_fields = fields
+
+
+class CropInputSerializer(serializers.Serializer):
+    """
+    Validates the incoming crop recommendation request.
+    Ranges are based on realistic agronomic values.
+    """
+    N = serializers.FloatField(min_value=0, max_value=300)
+    P = serializers.FloatField(min_value=0, max_value=300)
+    K = serializers.FloatField(min_value=0, max_value=300)
+    temperature = serializers.FloatField(min_value=0, max_value=50)
+    humidity = serializers.FloatField(min_value=0, max_value=100)
+    ph = serializers.FloatField(min_value=0, max_value=14)
+    rainfall = serializers.FloatField(min_value=0, max_value=500)
