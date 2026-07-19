@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import ReactMarkdown from 'react-markdown';
 import Navbar from '../components/Navbar';
 import api from '../api/axios';
+import remarkGfm from 'remark-gfm';
+
 
 function Message({ msg }) {
   const isUser = msg.role === 'user';
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-      {/* Avatar */}
       <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm ${
         isUser
           ? 'bg-primary-600 text-white'
@@ -16,18 +18,34 @@ function Message({ msg }) {
         {isUser ? '👤' : '🌱'}
       </div>
 
-      {/* Bubble */}
       <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
         isUser
           ? 'bg-primary-600 text-white rounded-tr-sm'
           : 'bg-white/10 border border-white/10 text-gray-100 rounded-tl-sm'
       }`}>
-        {msg.content.split('\n').map((line, i) => (
-          <span key={i}>
-            {line}
-            {i < msg.content.split('\n').length - 1 && <br />}
-          </span>
-        ))}
+        {isUser ? (
+          <span>{msg.content}</span>
+        ) : (
+          <div className="prose prose-invert prose-sm max-w-none
+            prose-p:my-1 prose-p:leading-relaxed
+            prose-ul:my-1 prose-ul:pl-4 prose-ul:space-y-1
+            prose-ol:my-1 prose-ol:pl-4 prose-ol:space-y-1
+            prose-li:my-0
+            prose-strong:text-primary-300 prose-strong:font-semibold
+            prose-h1:text-base prose-h1:font-bold prose-h1:text-primary-300 prose-h1:mt-3 prose-h1:mb-1
+            prose-h2:text-sm prose-h2:font-bold prose-h2:text-primary-300 prose-h2:mt-3 prose-h2:mb-1
+            prose-h3:text-sm prose-h3:font-semibold prose-h3:text-primary-400 prose-h3:mt-2 prose-h3:mb-1
+            prose-table:text-xs prose-table:w-full
+            prose-td:border prose-td:border-white/20 prose-td:px-2 prose-td:py-1 prose-td:align-top
+            prose-th:border prose-th:border-white/20 prose-th:px-2 prose-th:py-1 prose-th:bg-white/10 prose-th:text-primary-300
+            prose-hr:border-white/20 prose-hr:my-2
+            prose-code:bg-white/10 prose-code:px-1 prose-code:rounded prose-code:text-earth-300
+          ">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+  {msg.content}
+</ReactMarkdown>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -60,20 +78,18 @@ export default function ChatbotPage() {
 
   const language = i18n.language || 'en';
 
-  // Load suggested questions on mount and language change
   useEffect(() => {
     const loadSuggestions = async () => {
       try {
         const response = await api.get(`/chatbot/suggestions/?lang=${language}`);
         setSuggestions(response.data.suggestions || []);
       } catch {
-        // Non-critical — just hide suggestions
+        // Non-critical
       }
     };
     loadSuggestions();
   }, [language]);
 
-  // Scroll to bottom when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
@@ -103,7 +119,6 @@ export default function ChatbotPage() {
       setMessages([...updatedMessages, assistantMessage]);
     } catch (err) {
       setError(err.response?.data?.error || t('common.error'));
-      // Remove the user message if the request failed
       setMessages(messages);
     } finally {
       setLoading(false);
@@ -131,7 +146,6 @@ export default function ChatbotPage() {
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 pt-24 pb-4 flex flex-col">
 
-        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -149,10 +163,7 @@ export default function ChatbotPage() {
           )}
         </div>
 
-        {/* Chat area */}
         <div className="flex-1 glass-card p-4 overflow-y-auto mb-4 min-h-96 max-h-[60vh]">
-
-          {/* Welcome screen */}
           {showWelcome && (
             <div className="h-full flex flex-col items-center justify-center text-center py-8">
               <div className="text-6xl mb-4">🤖</div>
@@ -162,8 +173,6 @@ export default function ChatbotPage() {
               <p className="text-gray-400 text-sm max-w-sm mb-8">
                 {t('chatbot.welcome_desc')}
               </p>
-
-              {/* Suggested questions */}
               {suggestions.length > 0 && (
                 <div className="w-full max-w-md space-y-2">
                   <p className="text-gray-500 text-xs mb-3">
@@ -183,7 +192,6 @@ export default function ChatbotPage() {
             </div>
           )}
 
-          {/* Messages */}
           {!showWelcome && (
             <div className="space-y-4">
               {messages.map((msg, i) => (
@@ -195,14 +203,12 @@ export default function ChatbotPage() {
           )}
         </div>
 
-        {/* Error */}
         {error && (
           <div className="bg-red-600/20 border border-red-500/40 text-red-300 rounded-xl px-4 py-3 text-sm mb-3">
             {error}
           </div>
         )}
 
-        {/* Input area */}
         <div className="flex gap-3">
           <textarea
             ref={inputRef}
@@ -222,9 +228,7 @@ export default function ChatbotPage() {
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              '➤'
-            )}
+            ) : '➤'}
           </button>
         </div>
 
