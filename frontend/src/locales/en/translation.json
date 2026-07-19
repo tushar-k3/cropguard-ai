@@ -242,4 +242,15 @@
   "location_hint": "Requires browser location permission",
   "getting_location": "Getting your location..."
 }
+,
+"chatbot": {
+  "title": "AI Farming Assistant",
+  "subtitle": "Ask any farming question in English or Hindi",
+  "welcome_title": "Hello! I'm your farming assistant.",
+  "welcome_desc": "Ask me anything about crops, diseases, fertilizers, irrigation, or farming practices.",
+  "try_asking": "Try asking:",
+  "input_placeholder": "Ask a farming question... (Press Enter to send)",
+  "clear": "Clear Chat",
+  "powered_by": "Powered by Groq Llama 3 · Free tier"
+}
 }

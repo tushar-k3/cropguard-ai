@@ -12,6 +12,7 @@ import CropPage from './pages/CropPage';
 import FertilizerPage from './pages/FertilizerPage';
 import IrrigationPage from './pages/IrrigationPage';
 import WeatherPage from './pages/WeatherPage';
+import ChatbotPage from './pages/ChatbotPage';
 
 export default function App() {
   return (
@@ -29,9 +30,9 @@ export default function App() {
           <Route path="/fertilizer" element={<ProtectedRoute><FertilizerPage /></ProtectedRoute>} />
           <Route path="/irrigation" element={<ProtectedRoute><IrrigationPage /></ProtectedRoute>} />
           <Route path="/weather"    element={<ProtectedRoute><WeatherPage /></ProtectedRoute>} />
+          <Route path="/chatbot"    element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />
 
           {/* Placeholder routes — replaced in later phases */}
-          <Route path="/chatbot" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/market"  element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
 
