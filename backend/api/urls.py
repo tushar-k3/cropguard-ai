@@ -29,4 +29,7 @@ urlpatterns = [
     # Protected — Irrigation
     path('irrigation/recommend/', views.recommend_irrigation, name='irrigation-recommend'),
     path('irrigation/history/', views.irrigation_history, name='irrigation-history'),
+
+    # Protected — Weather
+    path('weather/', views.weather, name='weather'),
 ]

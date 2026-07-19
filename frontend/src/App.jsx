@@ -11,6 +11,7 @@ import ResultsPage from './pages/ResultsPage';
 import CropPage from './pages/CropPage';
 import FertilizerPage from './pages/FertilizerPage';
 import IrrigationPage from './pages/IrrigationPage';
+import WeatherPage from './pages/WeatherPage';
 
 export default function App() {
   return (
@@ -21,17 +22,17 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          <Route path="/scanner" element={<ProtectedRoute><ScannerPage /></ProtectedRoute>} />
-          <Route path="/results" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
-          <Route path="/crop" element={<ProtectedRoute><CropPage /></ProtectedRoute>} />
+          <Route path="/dashboard"  element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/scanner"    element={<ProtectedRoute><ScannerPage /></ProtectedRoute>} />
+          <Route path="/results"    element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
+          <Route path="/crop"       element={<ProtectedRoute><CropPage /></ProtectedRoute>} />
           <Route path="/fertilizer" element={<ProtectedRoute><FertilizerPage /></ProtectedRoute>} />
           <Route path="/irrigation" element={<ProtectedRoute><IrrigationPage /></ProtectedRoute>} />
+          <Route path="/weather"    element={<ProtectedRoute><WeatherPage /></ProtectedRoute>} />
 
           {/* Placeholder routes — replaced in later phases */}
-          <Route path="/weather" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/chatbot" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          <Route path="/market" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/market"  element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />

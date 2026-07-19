@@ -221,4 +221,25 @@
   "tip_2": "Check soil moisture at 10cm depth before irrigating",
   "tip_3": "Reduce irrigation during and after rainfall"
 }
+,
+"weather": {
+  "title": "Weather Dashboard",
+  "subtitle": "Real-time weather with farming advice for your location",
+  "search_placeholder": "Enter city name (e.g. Nashik, Pune, Delhi)",
+  "search_btn": "Search",
+  "loading": "Fetching weather data...",
+  "current_conditions": "Current Conditions",
+  "feels_like": "Feels like",
+  "humidity": "Humidity",
+  "rainfall": "Rainfall",
+  "wind": "Wind Speed",
+  "cloud_cover": "Cloud Cover",
+  "forecast_7day": "7-Day Forecast",
+  "farming_advice": "Farming Advice",
+  "empty_state": "Search for your city to get current weather and farming advice.",
+  "data_source": "Weather data from Open-Meteo (free, no API key)",
+  "use_location" : "Use My Current Location",
+  "location_hint": "Requires browser location permission",
+  "getting_location": "Getting your location..."
+}
 }
