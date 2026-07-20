@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from django.conf import settings
 from django.utils import timezone
-
+from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
@@ -123,6 +123,7 @@ def register(request):
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'preferred_language': user.profile.preferred_language,
+                'is_staff':   user.is_staff,
             },
         },
         status=status.HTTP_201_CREATED,
@@ -936,3 +937,102 @@ def download_summary_report(request):
             {'error': 'Failed to generate summary report.'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+# ─────────────────────────────────────────────
+# Admin Dashboard Stats
+# ─────────────────────────────────────────────
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_stats(request):
+    """
+    GET /api/admin/stats/
+    Only accessible to staff users.
+    Returns platform-wide statistics.
+    """
+    if not request.user.is_staff:
+        return Response(
+            {'error': 'Admin access required.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    from django.db.models import Count
+
+    # User stats
+    total_users  = User.objects.count()
+    active_users = User.objects.filter(is_active=True).count()
+
+    # Scan stats
+    total_scans    = ScanResult.objects.count()
+    diseased_scans = ScanResult.objects.filter(is_healthy=False).count()
+    kindwise_scans = ScanResult.objects.filter(source='kindwise').count()
+    offline_scans  = ScanResult.objects.filter(source='local_model').count()
+
+    # Top diseases
+    top_diseases = (
+        ScanResult.objects
+        .filter(is_healthy=False)
+        .exclude(plant_name='')
+        .values('plant_name')
+        .annotate(count=Count('id'))
+        .order_by('-count')[:5]
+    )
+
+    # Crop recommendation stats
+    total_crop_recs = CropRecommendation.objects.count()
+    top_crops = (
+        CropRecommendation.objects
+        .values('recommended_crop')
+        .annotate(count=Count('id'))
+        .order_by('-count')[:5]
+    )
+
+    # Fertilizer stats
+    total_fert_recs = FertilizerRecommendation.objects.count()
+    top_fertilizers = (
+        FertilizerRecommendation.objects
+        .values('recommended_fertilizer')
+        .annotate(count=Count('id'))
+        .order_by('-count')[:5]
+    )
+
+    # Irrigation stats
+    total_irrigation = IrrigationRecommendation.objects.count()
+
+    # Recent users
+    recent_users = User.objects.order_by('-date_joined')[:5]
+    recent_users_data = [
+        {
+            'username':    u.username,
+            'email':       u.email,
+            'date_joined': u.date_joined.strftime('%d/%m/%Y'),
+            'is_staff':    u.is_staff,
+        }
+        for u in recent_users
+    ]
+
+    return Response({
+        'users': {
+            'total':  total_users,
+            'active': active_users,
+        },
+        'scans': {
+            'total':    total_scans,
+            'diseased': diseased_scans,
+            'healthy':  total_scans - diseased_scans,
+            'kindwise': kindwise_scans,
+            'offline':  offline_scans,
+        },
+        'crops': {
+            'total_recommendations': total_crop_recs,
+            'top_crops': list(top_crops),
+        },
+        'fertilizers': {
+            'total_recommendations': total_fert_recs,
+            'top_fertilizers': list(top_fertilizers),
+        },
+        'irrigation': {
+            'total_recommendations': total_irrigation,
+        },
+        'top_diseases': list(top_diseases),
+        'recent_users': recent_users_data,
+    })

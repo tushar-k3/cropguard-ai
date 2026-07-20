@@ -15,6 +15,7 @@ import WeatherPage from './pages/WeatherPage';
 import ChatbotPage from './pages/ChatbotPage';
 import MarketPage from './pages/MarketPage';
 import ReportsPage from './pages/ReportsPage';
+import AdminPage from './pages/AdminPage';
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/chatbot"    element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />
           <Route path="/market"     element={<ProtectedRoute><MarketPage /></ProtectedRoute>} />
           <Route path="/reports"    element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+          <Route path="/admin-dashboard" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
