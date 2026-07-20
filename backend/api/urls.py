@@ -21,4 +21,6 @@ urlpatterns = [
     path('weather/', views.weather, name='weather'),
     path('chatbot/', views.chatbot, name='chatbot'),
     path('chatbot/suggestions/', views.chatbot_suggestions, name='chatbot-suggestions'),
+    path('market/', views.market_prices, name='market-prices'),
+    path('market/commodities/', views.market_commodities, name='market-commodities'),
 ]

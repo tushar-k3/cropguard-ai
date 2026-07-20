@@ -96,9 +96,6 @@ class FertilizerRecommendation(models.Model):
 
 
 class IrrigationRecommendation(models.Model):
-    """
-    Stores each irrigation recommendation request and result.
-    """
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='irrigation_recommendations'
     )
@@ -118,3 +115,33 @@ class IrrigationRecommendation(models.Model):
     class Meta:
         db_table = 'irrigation_recommendations'
         ordering = ['-created_at']
+
+
+class MarketPrice(models.Model):
+    """
+    Cache table for market prices from data.gov.in.
+    Always written to on successful API calls.
+    Read from when API is unavailable.
+    """
+    commodity = models.CharField(max_length=100)
+    variety = models.CharField(max_length=100, blank=True, default='')
+    market = models.CharField(max_length=200)
+    state = models.CharField(max_length=100)
+    district = models.CharField(max_length=100, blank=True, default='')
+    min_price = models.FloatField(default=0.0)
+    max_price = models.FloatField(default=0.0)
+    modal_price = models.FloatField(default=0.0)
+    price_date = models.DateField()
+    fetched_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.commodity} — {self.market} — ₹{self.modal_price}"
+
+    class Meta:
+        db_table = 'market_prices'
+        ordering = ['-price_date', '-fetched_at']
+        indexes = [
+            models.Index(fields=['commodity']),
+            models.Index(fields=['state']),
+            models.Index(fields=['price_date']),
+        ]

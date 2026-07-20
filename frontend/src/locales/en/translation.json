@@ -253,4 +253,21 @@
   "clear": "Clear Chat",
   "powered_by": "Powered by Groq Llama 3 · Free tier"
 }
+,
+"market": {
+  "title": "Market Prices",
+  "subtitle": "Current crop prices from Indian agricultural markets",
+  "commodity_label": "Commodity",
+  "commodity_placeholder": "e.g. Tomato, Onion, Wheat",
+  "state_label": "State",
+  "search_btn": "Search Prices",
+  "loading": "Fetching market prices...",
+  "showing": "Showing",
+  "results": "price records",
+  "no_results": "No price records found. Try a different commodity or state.",
+  "empty_state": "Search for a commodity to see current market prices.",
+  "per_quintal": "per quintal",
+  "live_data": "Live data from data.gov.in",
+  "cached_data": "Showing cached data — API currently unavailable"
+}
 }

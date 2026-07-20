@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import (
     UserProfile, ScanResult, CropRecommendation,
-    FertilizerRecommendation, IrrigationRecommendation
+    FertilizerRecommendation, IrrigationRecommendation, MarketPrice
 )
 
 
@@ -180,3 +180,13 @@ class IrrigationInputSerializer(serializers.Serializer):
     temperature = serializers.FloatField(min_value=0, max_value=50)
     humidity = serializers.FloatField(min_value=0, max_value=100)
     rainfall = serializers.FloatField(min_value=0, max_value=500)
+
+
+class MarketPriceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MarketPrice
+        fields = [
+            'id', 'commodity', 'variety', 'market', 'state', 'district',
+            'min_price', 'max_price', 'modal_price', 'price_date', 'fetched_at',
+        ]
+        read_only_fields = fields

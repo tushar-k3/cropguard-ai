@@ -253,4 +253,21 @@
   "clear": "चॅट साफ करा",
   "powered_by": "Groq Llama 3 द्वारे चालवले · मोफत"
 }
+,
+"market": {
+  "title": "बाजारभाव",
+  "subtitle": "भारतीय कृषी बाजारांतील सध्याचे पीक भाव",
+  "commodity_label": "वस्तू",
+  "commodity_placeholder": "उदा. टोमॅटो, कांदा, गहू",
+  "state_label": "राज्य",
+  "search_btn": "भाव शोधा",
+  "loading": "बाजारभाव मिळवत आहे...",
+  "showing": "दाखवत आहे",
+  "results": "भाव नोंदी",
+  "no_results": "कोणत्याही भाव नोंदी आढळल्या नाहीत.",
+  "empty_state": "सध्याचे बाजारभाव पाहण्यासाठी वस्तू शोधा.",
+  "per_quintal": "प्रति क्विंटल",
+  "live_data": "data.gov.in कडून थेट डेटा",
+  "cached_data": "कॅश केलेला डेटा दाखवत आहे — API अनुपलब्ध"
+}
 }

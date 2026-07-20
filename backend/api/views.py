@@ -9,6 +9,13 @@ from rest_framework.decorators import (
     permission_classes,
     parser_classes,
 )
+
+from .models import (
+    ScanResult, CropRecommendation,
+    FertilizerRecommendation, IrrigationRecommendation,
+    MarketPrice,
+)
+
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -823,3 +830,47 @@ def chatbot_suggestions(request):
     return Response({
         'suggestions': suggestions
     })
+# ─────────────────────────────────────────────
+# Market Prices
+# ─────────────────────────────────────────────
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def market_prices(request):
+    """
+    GET /api/market/?commodity=Tomato&state=Maharashtra&limit=50
+    Returns live prices from data.gov.in or cached prices as fallback.
+    """
+    from .market import get_market_prices, seed_sample_prices
+
+    commodity = request.query_params.get('commodity', '').strip() or None
+    state     = request.query_params.get('state', '').strip() or None
+    limit     = int(request.query_params.get('limit', 50))
+
+    # Seed sample data on first run so page is never empty
+    seed_sample_prices()
+
+    result = get_market_prices(
+        commodity=commodity,
+        state=state,
+        limit=limit,
+    )
+
+    return Response(result)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def market_commodities(request):
+    """Returns list of unique commodities in the cache for the search dropdown."""
+    from .models import MarketPrice
+    from .market import seed_sample_prices
+
+    seed_sample_prices()
+
+    commodities = (
+        MarketPrice.objects
+        .values_list('commodity', flat=True)
+        .distinct()
+        .order_by('commodity')
+    )
+    return Response({'commodities': list(commodities)})
