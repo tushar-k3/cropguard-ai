@@ -23,4 +23,6 @@ urlpatterns = [
     path('chatbot/suggestions/', views.chatbot_suggestions, name='chatbot-suggestions'),
     path('market/', views.market_prices, name='market-prices'),
     path('market/commodities/', views.market_commodities, name='market-commodities'),
+    path('reports/scan/<int:scan_id>/', views.download_scan_report, name='scan-report'),
+    path('reports/summary/', views.download_summary_report, name='summary-report'),
 ]

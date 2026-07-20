@@ -1,5 +1,5 @@
 import logging
-
+from datetime import datetime
 from django.conf import settings
 from django.utils import timezone
 
@@ -15,6 +15,8 @@ from .models import (
     FertilizerRecommendation, IrrigationRecommendation,
     MarketPrice,
 )
+from django.http import HttpResponse
+from .reports import generate_scan_report, generate_summary_report
 
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -874,3 +876,63 @@ def market_commodities(request):
         .order_by('commodity')
     )
     return Response({'commodities': list(commodities)})
+
+# ─────────────────────────────────────────────
+# Reports
+# ─────────────────────────────────────────────
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def download_scan_report(request, scan_id):
+    """
+    GET /api/reports/scan/<scan_id>/
+    Downloads a PDF report for a single scan.
+    """
+    try:
+        scan = ScanResult.objects.get(id=scan_id, user=request.user)
+    except ScanResult.DoesNotExist:
+        return Response(
+            {'error': 'Scan not found.'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    try:
+        pdf_bytes = generate_scan_report(scan, request.user)
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = (
+            f'attachment; filename="cropguard_scan_{scan_id}_{scan.created_at.strftime("%Y%m%d")}.pdf"'
+        )
+        return response
+    except Exception as e:
+        logger.error(f"PDF generation error: {e}")
+        return Response(
+            {'error': 'Failed to generate PDF report.'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def download_summary_report(request):
+    """
+    GET /api/reports/summary/
+    Downloads a PDF summary of all user activity.
+    """
+    scans          = list(ScanResult.objects.filter(user=request.user)[:20])
+    crop_recs      = list(CropRecommendation.objects.filter(user=request.user)[:20])
+    fertilizer_recs = list(FertilizerRecommendation.objects.filter(user=request.user)[:20])
+    irrigation_recs = list(IrrigationRecommendation.objects.filter(user=request.user)[:20])
+
+    try:
+        pdf_bytes = generate_summary_report(
+            request.user, scans, crop_recs, fertilizer_recs, irrigation_recs
+        )
+        filename = f"cropguard_summary_{request.user.username}_{datetime.now().strftime('%Y%m%d')}.pdf"
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    except Exception as e:
+        logger.error(f"Summary PDF error: {e}")
+        return Response(
+            {'error': 'Failed to generate summary report.'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

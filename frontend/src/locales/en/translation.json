@@ -270,4 +270,17 @@
   "live_data": "Live data from data.gov.in",
   "cached_data": "Showing cached data — API currently unavailable"
 }
+,
+"reports": {
+  "title": "My Reports",
+  "subtitle": "Download PDF reports of your scans and recommendations",
+  "summary_title": "Complete Summary Report",
+  "summary_desc": "Download a full PDF including all scans, crop recommendations, fertilizer and irrigation advice.",
+  "download_summary": "Download Summary PDF",
+  "scan_reports": "Individual Scan Reports",
+  "download_pdf": "Download PDF",
+  "download_success": "PDF downloaded successfully!",
+  "download_error": "Failed to download PDF. Please try again.",
+  "no_scans": "No scan reports yet. Scan a plant to generate your first report."
+}
 }

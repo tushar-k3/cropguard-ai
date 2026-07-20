@@ -14,6 +14,7 @@ import IrrigationPage from './pages/IrrigationPage';
 import WeatherPage from './pages/WeatherPage';
 import ChatbotPage from './pages/ChatbotPage';
 import MarketPage from './pages/MarketPage';
+import ReportsPage from './pages/ReportsPage';
 
 export default function App() {
   return (
@@ -33,9 +34,7 @@ export default function App() {
           <Route path="/weather"    element={<ProtectedRoute><WeatherPage /></ProtectedRoute>} />
           <Route path="/chatbot"    element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />
           <Route path="/market"     element={<ProtectedRoute><MarketPage /></ProtectedRoute>} />
-
-          {/* Placeholder — replaced in Phase 10 */}
-          <Route path="/reports" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/reports"    element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
