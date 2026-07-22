@@ -12,8 +12,8 @@ const LANGUAGES = [
 export default function Navbar() {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -22,32 +22,34 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { path: '/dashboard', label: t('nav.dashboard') },
-    { path: '/scanner', label: t('nav.scanner') },
-    { path: '/crop', label: t('nav.crop') },
-    { path: '/weather', label: t('nav.weather') },
-    { path: '/chatbot', label: t('nav.chatbot') },
+    { path: '/dashboard',  label: t('nav.dashboard') },
+    { path: '/scanner',    label: t('nav.scanner')   },
+    { path: '/crop',       label: t('nav.crop')      },
+    { path: '/weather',    label: t('nav.weather')   },
+    { path: '/chatbot',    label: t('nav.chatbot')   },
   ];
+
+  const isActive = (path) => location.pathname === path;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/90 backdrop-blur-md border-b border-white/10">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
         {/* Logo */}
-        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-3">
+        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-3 flex-shrink-0">
           <span className="text-2xl">🌱</span>
           <span className="text-xl font-bold text-primary-400">CropGuard AI</span>
         </Link>
 
-        {/* Desktop nav links — only shown when logged in */}
+        {/* Desktop nav */}
         {user && (
           <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  location.pathname === link.path
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isActive(link.path)
                     ? 'bg-primary-600/20 text-primary-400'
                     : 'text-gray-400 hover:text-white hover:bg-white/10'
                 }`}
@@ -79,11 +81,33 @@ export default function Navbar() {
           </div>
 
           {user ? (
-            <div className="flex items-center gap-3">
-              {/* User greeting */}
-              <span className="hidden md:block text-sm text-gray-400">
+            <div className="flex items-center gap-2">
+              {/* Profile link */}
+              <Link
+                to="/profile"
+                className={`hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                  isActive('/profile')
+                    ? 'bg-primary-600/20 text-primary-400'
+                    : 'text-gray-400 hover:text-white hover:bg-white/10'
+                }`}
+              >
                 👤 {user.first_name || user.username}
-              </span>
+              </Link>
+
+              {/* Admin link — only for staff */}
+              {user.is_staff && (
+                <Link
+                  to="/admin-dashboard"
+                  className={`hidden md:flex items-center gap-1 px-3 py-2 rounded-lg text-xs transition-all duration-200 ${
+                    isActive('/admin-dashboard')
+                      ? 'bg-purple-600/20 text-purple-400'
+                      : 'text-gray-500 hover:text-purple-400 hover:bg-white/10'
+                  }`}
+                >
+                  ⚙️ Admin
+                </Link>
+              )}
+
               <button
                 onClick={handleLogout}
                 className="btn-secondary text-sm py-2 px-4"

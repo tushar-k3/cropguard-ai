@@ -16,6 +16,7 @@ import ChatbotPage from './pages/ChatbotPage';
 import MarketPage from './pages/MarketPage';
 import ReportsPage from './pages/ReportsPage';
 import AdminPage from './pages/AdminPage';
+import ProfilePage from './pages/ProfilePage';
 
 export default function App() {
   return (
@@ -26,16 +27,17 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          <Route path="/dashboard"  element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          <Route path="/scanner"    element={<ProtectedRoute><ScannerPage /></ProtectedRoute>} />
-          <Route path="/results"    element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
-          <Route path="/crop"       element={<ProtectedRoute><CropPage /></ProtectedRoute>} />
-          <Route path="/fertilizer" element={<ProtectedRoute><FertilizerPage /></ProtectedRoute>} />
-          <Route path="/irrigation" element={<ProtectedRoute><IrrigationPage /></ProtectedRoute>} />
-          <Route path="/weather"    element={<ProtectedRoute><WeatherPage /></ProtectedRoute>} />
-          <Route path="/chatbot"    element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />
-          <Route path="/market"     element={<ProtectedRoute><MarketPage /></ProtectedRoute>} />
-          <Route path="/reports"    element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+          <Route path="/dashboard"       element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/scanner"         element={<ProtectedRoute><ScannerPage /></ProtectedRoute>} />
+          <Route path="/results"         element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
+          <Route path="/crop"            element={<ProtectedRoute><CropPage /></ProtectedRoute>} />
+          <Route path="/fertilizer"      element={<ProtectedRoute><FertilizerPage /></ProtectedRoute>} />
+          <Route path="/irrigation"      element={<ProtectedRoute><IrrigationPage /></ProtectedRoute>} />
+          <Route path="/weather"         element={<ProtectedRoute><WeatherPage /></ProtectedRoute>} />
+          <Route path="/chatbot"         element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />
+          <Route path="/market"          element={<ProtectedRoute><MarketPage /></ProtectedRoute>} />
+          <Route path="/reports"         element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+          <Route path="/profile"         element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/admin-dashboard" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />

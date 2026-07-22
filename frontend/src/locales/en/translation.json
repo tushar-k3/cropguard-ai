@@ -283,4 +283,14 @@
   "download_error": "Failed to download PDF. Please try again.",
   "no_scans": "No scan reports yet. Scan a plant to generate your first report."
 }
+,
+"profile": {
+  "title": "My Profile",
+  "save_btn": "Save Changes",
+  "saving": "Saving...",
+  "save_success": "Profile updated successfully!",
+  "farm_size": "Farm Size",
+  "account_info": "Account Information",
+  "role": "Role"
+}
 }
