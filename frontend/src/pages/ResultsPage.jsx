@@ -33,9 +33,8 @@ function ConfidenceBar({ value }) {
 
 function DiseaseCard({ disease }) {
   const { t } = useTranslation();
-
   const hasBiological = disease.treatment?.biological?.length > 0;
-  const hasChemical = disease.treatment?.chemical?.length > 0;
+  const hasChemical   = disease.treatment?.chemical?.length > 0;
   const hasPrevention = disease.treatment?.prevention?.length > 0;
 
   return (
@@ -65,7 +64,6 @@ function DiseaseCard({ disease }) {
         </p>
       )}
 
-      {/* Treatment sections */}
       {hasBiological && (
         <div className="mt-4">
           <h4 className="text-sm font-semibold text-primary-400 mb-2">
@@ -118,13 +116,12 @@ function DiseaseCard({ disease }) {
 }
 
 export default function ResultsPage() {
-  const { t } = useTranslation();
+  const { t }    = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
 
   const result = location.state?.result;
 
-  // If user lands here directly without scan data, redirect to scanner
   if (!result) {
     return (
       <div className="min-h-screen bg-gray-950 text-white">
@@ -141,7 +138,34 @@ export default function ResultsPage() {
   }
 
   const isHealthy = result.is_healthy;
-  const diseases = result.diseases || [];
+  const diseases  = result.diseases || [];
+
+  // ── Plant name logic ────────────────────────────────────────────────────
+  // Priority: common name from PlantNet → inferred from disease → fallback
+  const rawName   = result.plant_name || '';
+  const plantName = rawName || t('results.unknown_plant');
+
+  // ── Determine display name ───────────────────────────────────────────────
+  // If we have a disease and no good plant name, show "Plant" not "Unknown Plant"
+  const displayPlantName = (() => {
+    if (rawName && rawName !== 'Unknown Plant') return rawName;
+    if (diseases.length > 0) {
+      // Try to extract crop from first disease name
+      const commonCrops = [
+        'Tomato', 'Potato', 'Apple', 'Corn', 'Grape', 'Cherry',
+        'Peach', 'Pepper', 'Strawberry', 'Soybean', 'Wheat',
+        'Rice', 'Cotton', 'Sugarcane', 'Banana', 'Mango',
+        'Onion', 'Chilli', 'Cauliflower', 'Cabbage',
+      ];
+      for (const crop of commonCrops) {
+        if (diseases[0].name?.toLowerCase().includes(crop.toLowerCase())) {
+          return crop + ' Plant';
+        }
+      }
+      return t('results.unknown_plant');
+    }
+    return t('results.unknown_plant');
+  })();
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -149,7 +173,7 @@ export default function ResultsPage() {
 
       <main className="max-w-3xl mx-auto px-6 pt-28 pb-16">
 
-        {/* Header */}
+        {/* Back button */}
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => navigate('/scanner')}
@@ -162,34 +186,56 @@ export default function ResultsPage() {
         {/* Plant Identity Card */}
         <div className="glass-card p-6 mb-6">
           <div className="flex items-start justify-between mb-4">
-            <div>
-              <p className="text-gray-400 text-sm mb-1">{t('results.identified_plant')}</p>
+            <div className="flex-1">
+              <p className="text-gray-400 text-sm mb-1">
+                {t('results.identified_plant')}
+              </p>
+
+              {/* Common / general name — large and prominent */}
               <h1 className="text-2xl font-bold text-white">
-                {result.plant_name || t('results.unknown_plant')}
+                {displayPlantName}
               </h1>
+
+              {/* Show disease context below plant name when available */}
+              {!isHealthy && diseases.length > 0 && (
+                <p className="text-earth-400 text-sm mt-1 font-medium">
+                  🦠 {diseases[0].name}
+                  {diseases[0].probability > 0
+                    ? ` — ${diseases[0].probability}% confidence`
+                    : ''}
+                </p>
+              )}
             </div>
             <SourceBadge source={result.source} />
           </div>
 
-          {/* Confidence */}
+          {/* Identification confidence — only show if PlantNet gave a score */}
           {result.plant_probability > 0 && (
             <div className="mt-4">
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-400">{t('results.identification_confidence')}</span>
-                <span className="text-white font-medium">{result.plant_probability}%</span>
+                <span className="text-gray-400">
+                  {t('results.identification_confidence')}
+                </span>
+                <span className="text-white font-medium">
+                  {result.plant_probability}%
+                </span>
               </div>
               <ConfidenceBar value={result.plant_probability} />
             </div>
           )}
 
-          {/* Health Status */}
+          {/* Health status badge */}
           <div className={`mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium ${
             isHealthy
               ? 'bg-primary-600/20 border border-primary-500/40 text-primary-300'
               : 'bg-red-600/20 border border-red-500/40 text-red-300'
           }`}>
             <span>{isHealthy ? '✅' : '⚠️'}</span>
-            <span>{isHealthy ? t('results.healthy') : t('results.disease_detected')}</span>
+            <span>
+              {isHealthy
+                ? t('results.healthy')
+                : t('results.disease_detected')}
+            </span>
           </div>
         </div>
 
@@ -209,7 +255,7 @@ export default function ResultsPage() {
           </div>
         )}
 
-        {/* Disease Results */}
+        {/* All diseases */}
         {!isHealthy && diseases.length > 0 && (
           <div className="space-y-4 mb-6">
             <h2 className="text-xl font-bold text-white">

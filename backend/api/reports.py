@@ -175,14 +175,14 @@ def generate_scan_report(scan, user):
     story.append(_divider())
     story.append(Paragraph("Plant Identification", styles['section']))
 
-    diseases_list = result.get('diseases', [])
-    first_disease = diseases_list[0].get('name', '') if diseases_list else ''
+    diseases_list  = result.get('diseases', [])
+    first_disease  = diseases_list[0].get('name', '') if diseases_list else ''
     plant_name = (
         scan.plant_name
         or result.get('plant_name', '')
         or (f"Plant with {first_disease}" if first_disease else 'Unknown Plant')
     )
-
+    
     is_healthy   = scan.is_healthy
     confidence   = scan.confidence or result.get('plant_probability', 0)
 

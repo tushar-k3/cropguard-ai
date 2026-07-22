@@ -186,3 +186,4 @@ SIMPLE_JWT = {
 KINDWISE_API_KEY = config('KINDWISE_API_KEY', default='')
 GROQ_API_KEY = config('GROQ_API_KEY', default='')
 DATA_GOV_API_KEY = config('DATA_GOV_API_KEY', default='')
+PLANTNET_API_KEY = config('PLANTNET_API_KEY', default='')

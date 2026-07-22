@@ -5,171 +5,230 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-KINDWISE_API_URL = "https://plant.id/api/v3/health_assessment"
+KINDWISE_HEALTH_URL = "https://plant.id/api/v3/health_assessment"
+PLANTNET_API_URL    = "https://my-api.plantnet.org/v2/identify/all"
 
-# These are the 38 disease classes the PlantVillage dataset covers.
-# Used to warn users when the fallback model is likely unreliable.
-PLANTVIL_LAGE_CLASSES = [
-    "Apple___Apple_scab", "Apple___Black_rot", "Apple___Cedar_apple_rust",
-    "Apple___healthy", "Blueberry___healthy", "Cherry___Powdery_mildew",
-    "Cherry___healthy", "Corn___Cercospora_leaf_spot",
-    "Corn___Common_rust", "Corn___Northern_Leaf_Blight", "Corn___healthy",
-    "Grape___Black_rot", "Grape___Esca", "Grape___Leaf_blight",
-    "Grape___healthy", "Orange___Haunglongbing", "Peach___Bacterial_spot",
-    "Peach___healthy", "Pepper___Bacterial_spot", "Pepper___healthy",
-    "Potato___Early_blight", "Potato___Late_blight", "Potato___healthy",
-    "Raspberry___healthy", "Soybean___healthy", "Squash___Powdery_mildew",
-    "Strawberry___Leaf_scorch", "Strawberry___healthy",
-    "Tomato___Bacterial_spot", "Tomato___Early_blight",
-    "Tomato___Late_blight", "Tomato___Leaf_Mold",
-    "Tomato___Septoria_leaf_spot", "Tomato___Spider_mites",
-    "Tomato___Target_Spot", "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
-    "Tomato___Tomato_mosaic_virus", "Tomato___healthy",
+NON_PLANT_WORDS = {
+    'nutrient deficiency', 'deficiency', 'stress', 'damage',
+    'injury', 'disorder', 'abiotic', 'unknown', 'other',
+    'mechanical damage', 'frost damage', 'sunburn', 'waterlogging',
+}
+
+COMMON_PLANTS = [
+    'Tomato', 'Potato', 'Apple', 'Corn', 'Grape', 'Cherry',
+    'Peach', 'Pepper', 'Strawberry', 'Soybean', 'Wheat',
+    'Rice', 'Cotton', 'Sugarcane', 'Banana', 'Mango',
+    'Onion', 'Chilli', 'Citrus', 'Orange', 'Maize',
+    'Cauliflower', 'Cabbage', 'Brinjal', 'Okra', 'Pea',
+    'Groundnut', 'Sunflower', 'Mustard', 'Lentil', 'Chickpea',
+    'Pomegranate', 'Guava', 'Papaya', 'Coconut', 'Turmeric',
 ]
 
 
-def encode_image_to_base64(image_file):
-    """Convert an uploaded image file to base64 string for the API."""
+def encode_image(image_file):
     image_file.seek(0)
     return base64.b64encode(image_file.read()).decode('utf-8')
 
 
+def identify_via_plantnet(image_file):
+    """
+    Uses Pl@ntNet API to identify plant species.
+    Free tier: 500 requests/day.
+    Returns (common_name, scientific_name, confidence_percent)
+    """
+    plantnet_key = getattr(settings, 'PLANTNET_API_KEY', '')
+    if not plantnet_key:
+        logger.warning("PLANTNET_API_KEY not set.")
+        return '', '', 0
+
+    try:
+        image_file.seek(0)
+        files  = [('images', ('plant.jpg', image_file, 'image/jpeg'))]
+        params = {
+            'api-key':    plantnet_key,
+            'include-related-images': 'false',
+            'no-reject':  'false',
+            'lang':       'en',
+        }
+
+        response = requests.post(
+            PLANTNET_API_URL,
+            files=files,
+            params=params,
+            timeout=20,
+        )
+
+        if response.status_code == 404:
+            # PlantNet returns 404 when it cannot identify the plant
+            logger.info("PlantNet: plant not recognized in image.")
+            return '', '', 0
+
+        if response.status_code != 200:
+            logger.warning(f"PlantNet returned {response.status_code}: {response.text[:200]}")
+            return '', '', 0
+
+        data    = response.json()
+        results = data.get('results', [])
+
+        if not results:
+            return '', '', 0
+
+        top         = results[0]
+        score       = top.get('score', 0)
+        species     = top.get('species', {})
+        sci_name    = species.get('scientificNameWithoutAuthor', '')
+        common_names = species.get('commonNames', [])
+        common_name  = common_names[0] if common_names else ''
+
+        # Use common name if available, otherwise use scientific name
+        display_name = common_name or sci_name
+
+        if display_name and display_name.lower() not in NON_PLANT_WORDS:
+            # Capitalize properly
+            display_name = display_name.title()
+            confidence   = round(score * 100, 1)
+            logger.info(
+                f"PlantNet identified: {display_name} "
+                f"(sci: {sci_name}) at {confidence}%"
+            )
+            return display_name, sci_name, confidence
+
+        return '', sci_name, 0
+
+    except Exception as e:
+        logger.warning(f"PlantNet identification failed: {e}")
+        return '', '', 0
+
+
+def infer_plant_from_disease(diseases_raw):
+    """Infer plant name from disease name as last resort."""
+    for disease in diseases_raw[:3]:
+        d_name = disease.get('name', '')
+        for plant in COMMON_PLANTS:
+            if plant.lower() in d_name.lower():
+                return plant
+    return ''
+
+
 def call_kindwise(image_file):
     """
-    Sends image to Kindwise Plant.id API for health assessment.
+    Main detection function.
 
-    Returns a dict with:
-        success (bool)
-        source (str): 'kindwise'
-        plant_name (str)
-        is_healthy (bool)
-        diseases (list of dicts)
-        error (str) — only if success is False
-        limit_exceeded (bool) — True when quota is used up
+    Plant name strategy:
+    1. PlantNet API (free, 500/day, 75k+ species) ← primary
+    2. Infer from disease name ← fallback
+    3. 'Unknown Plant' ← last resort
+
+    Disease detection:
+    - Kindwise health assessment API ← unchanged
     """
-    api_key = settings.KINDWISE_API_KEY
-
-    if not api_key:
-        logger.warning("KINDWISE_API_KEY is not set. Skipping Kindwise call.")
+    kindwise_key = settings.KINDWISE_API_KEY
+    if not kindwise_key:
         return {
-            'success': False,
-            'error': 'Kindwise API key not configured.',
+            'success':        False,
+            'error':          'Kindwise API key not configured.',
             'limit_exceeded': False,
         }
 
     try:
-        image_b64 = encode_image_to_base64(image_file)
+        # ── Step 1: Identify plant via PlantNet ─────────────────────────────
+        common_name, sci_name, plant_probability = identify_via_plantnet(image_file)
+        plant_name = common_name
+        logger.info(f"PlantNet result: '{plant_name}' ({plant_probability}%)")
 
-        payload = {
-            "images": [f"data:image/jpeg;base64,{image_b64}"],
-            "health": "all",
+        # ── Step 2: Disease detection via Kindwise ───────────────────────────
+        image_b64 = encode_image(image_file)
+        health_payload = {
+            "images":               [f"data:image/jpeg;base64,{image_b64}"],
+            "health":               "all",
             "classification_level": "species",
         }
-
         headers = {
-            "Api-Key": api_key,
+            "Api-Key":      kindwise_key,
             "Content-Type": "application/json",
         }
-
-        response = requests.post(
-            KINDWISE_API_URL,
-            json=payload,
+        health_response = requests.post(
+            KINDWISE_HEALTH_URL,
+            json=health_payload,
             headers=headers,
             timeout=30,
         )
 
-        # 429 = rate limit exceeded
-        if response.status_code == 429:
-            logger.warning("Kindwise API rate limit exceeded.")
+        if health_response.status_code == 429:
             return {
-                'success': False,
-                'error': 'API limit exceeded.',
+                'success':        False,
+                'error':          'Kindwise API limit exceeded.',
                 'limit_exceeded': True,
             }
 
-    
-        if response.status_code not in (200, 201):
-            logger.error(f"Kindwise API error: {response.status_code} — {response.text}")
+        if health_response.status_code not in (200, 201):
             return {
-                'success': False,
-                'error': f"Kindwise API returned status {response.status_code}.",
+                'success':        False,
+                'error':          f"Kindwise returned {health_response.status_code}.",
                 'limit_exceeded': False,
-        }
+            }
 
-        data = response.json()
-        return parse_kindwise_response(data)
+        health_data  = health_response.json()
+        result       = health_data.get('result', {})
+        is_plant     = result.get('is_plant',   {}).get('binary', True)
+        is_healthy   = result.get('is_healthy', {}).get('binary', True)
+        diseases_raw = result.get('disease', {}).get('suggestions', [])
 
-    except requests.exceptions.Timeout:
-        logger.error("Kindwise API request timed out.")
-        return {'success': False, 'error': 'Request timed out.', 'limit_exceeded': False}
+        # ── Step 3: Fallback plant name from disease if PlantNet failed ──────
+        if not plant_name:
+            plant_name = infer_plant_from_disease(diseases_raw)
+            if plant_name:
+                logger.info(f"Inferred plant from disease: '{plant_name}'")
 
-    except requests.exceptions.ConnectionError:
-        logger.error("Cannot reach Kindwise API — no internet connection.")
-        return {'success': False, 'error': 'No internet connection.', 'limit_exceeded': False}
+        if not plant_name or plant_name.lower() in NON_PLANT_WORDS:
+            # Use scientific name if we have it
+            if sci_name:
+                plant_name = sci_name.title()
+            else:
+                plant_name = 'Unknown Plant'
 
-    except Exception as e:
-        logger.error(f"Unexpected Kindwise error: {e}")
-        return {'success': False, 'error': str(e), 'limit_exceeded': False}
-
-
-def parse_kindwise_response(data):
-    """
-    Extracts the relevant fields from the Kindwise API response.
-    Handles both healthy and diseased plants.
-    """
-    try:
-        result = data.get('result', {})
-
-        # Plant classification
-        classification = result.get('classification', {})
-        suggestions = classification.get('suggestions', [])
-        plant_name = suggestions[0]['name'] if suggestions else 'Unknown Plant'
-        plant_probability = suggestions[0].get('probability', 0) if suggestions else 0
-
-        # Health assessment
-        is_plant = result.get('is_plant', {}).get('binary', True)
-        is_healthy_obj = result.get('is_healthy', {})
-        is_healthy = is_healthy_obj.get('binary', True)
-
-        # Disease list
+        # ── Step 4: Build disease list ───────────────────────────────────────
         diseases = []
-        disease_suggestions = result.get('disease', {}).get('suggestions', [])
+        for disease in diseases_raw[:5]:
+            probability  = disease.get('probability', 0)
+            disease_name = disease.get('name', '')
 
-        for disease in disease_suggestions[:5]:  # Top 5 diseases max
-            probability = disease.get('probability', 0)
-            if probability < 0.05:  # Skip very low probability items
+            if probability < 0.05:
+                continue
+            if disease_name.lower() in NON_PLANT_WORDS:
                 continue
 
             disease_details = disease.get('details', {})
-            treatments = disease_details.get('treatment', {})
+            treatments      = disease_details.get('treatment', {})
 
             diseases.append({
-                'name': disease.get('name', 'Unknown'),
-                'probability': round(probability * 100, 1),
-                'description': disease_details.get('description', ''),
+                'name':         disease_name,
+                'probability':  round(probability * 100, 1),
+                'description':  disease_details.get('description', ''),
                 'treatment': {
                     'biological': treatments.get('biological', []),
-                    'chemical': treatments.get('chemical', []),
+                    'chemical':   treatments.get('chemical', []),
                     'prevention': treatments.get('prevention', []),
                 },
                 'common_names': disease_details.get('common_names', []),
             })
 
         return {
-            'success': True,
-            'source': 'kindwise',
-            'is_plant': is_plant,
-            'plant_name': plant_name,
-            'plant_probability': round(plant_probability * 100, 1),
-            'is_healthy': is_healthy,
-            'diseases': diseases,
-            'limit_exceeded': False,
+            'success':              True,
+            'source':               'kindwise',
+            'is_plant':             is_plant,
+            'plant_name':           plant_name,
+            'scientific_name':      sci_name,
+            'plant_probability':    plant_probability,
+            'is_healthy':           is_healthy,
+            'diseases':             diseases,
+            'limit_exceeded':       False,
         }
 
+    except requests.exceptions.Timeout:
+        return {'success': False, 'error': 'Request timed out.', 'limit_exceeded': False}
+    except requests.exceptions.ConnectionError:
+        return {'success': False, 'error': 'No internet connection.', 'limit_exceeded': False}
     except Exception as e:
-        logger.error(f"Error parsing Kindwise response: {e}")
-        return {
-            'success': False,
-            'error': f'Failed to parse API response: {e}',
-            'limit_exceeded': False,
-        }
+        logger.error(f"Unexpected error: {e}")
+        return {'success': False, 'error': str(e), 'limit_exceeded': False}
