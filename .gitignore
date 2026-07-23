@@ -1,4 +1,4 @@
-# ── Python / Django ──
+# ── Python / Django ──────────────────────────────────────────────────────
 backend/venv/
 backend/__pycache__/
 backend/**/__pycache__/
@@ -10,17 +10,24 @@ backend/staticfiles/
 backend/media/
 *.egg-info/
 
-# ── Node / React ──
+# ── ML model files (too large for git) ───────────────────────────────────
+backend/api/ml/mobilenet_plant.h5
+backend/api/ml/crop_model.pkl
+backend/api/ml/fertilizer_model.pkl
+backend/api/ml/irrigation_model.pkl
+
+# ── Node / React ──────────────────────────────────────────────────────────
 frontend/node_modules/
 frontend/dist/
 frontend/.env
+frontend/.env.production
 
-# ── OS ──
+# ── OS ────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# ── IDE ──
+# ── IDE ───────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
